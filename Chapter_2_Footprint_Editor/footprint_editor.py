@@ -116,7 +116,60 @@ edit_menu.add_command(
 
 view_menu = Menu(menu_bar, tearoff=0)
 # All view menu goes down here
-menu_bar.add_cascade(label='Edit', menu=view_menu)
+menu_bar.add_cascade(label='View', menu=view_menu)
+
+view_menu.add_checkbutton(
+    label='Show Line Number',
+    #variable=show_line_no
+)
+
+view_menu.add_checkbutton(
+    label='Show Cursor Location at Bottom',
+    #variable=cursor_bottom
+)
+
+view_menu.add_checkbutton(
+    label='Highlight Current Line',
+    #variable=highlight_line
+)
+
+themes_menu = Menu(view_menu, tearoff=0)
+view_menu.add_cascade(label='Themes', menu=themes_menu)
+
+themes_menu.add_radiobutton(
+    label='Aquamarine',
+    #variable=theme_name
+)
+
+themes_menu.add_radiobutton(
+    label='Bold Beige',
+    #variable=theme_name
+)
+
+themes_menu.add_radiobutton(
+    label='Cobalt Blue',
+    #variable=theme_name
+)
+
+themes_menu.add_radiobutton(
+    label='Default',
+    #variable=theme_name
+)
+
+themes_menu.add_radiobutton(
+    label='Greygarious',
+    #variable=theme_name
+)
+
+themes_menu.add_radiobutton(
+    label='Night Mode',
+    #variable=theme_name
+)
+
+themes_menu.add_radiobutton(
+    label='Olive Green',
+    #variable=theme_name
+)
 
 about_menu = Menu(menu_bar, tearoff=0)
 # All about menu goes down here
@@ -135,5 +188,31 @@ about_menu.add_command(
 )
 
 root.config(menu=menu_bar)
+
+# Frame widget to hold the shortcut icons
+shortcut_bar = Frame(root, height=25, background='light sea green')
+shortcut_bar.pack(expand='no', fill=X)
+
+# Text widget to hold line numbers
+line_number_bar = Text(
+    root,
+    width=4,
+    padx=3,
+    takefocus=0,
+    border=0,
+    background='khaki',
+    state='disabled',
+    wrap='none'
+)
+line_number_bar.pack(side='left', fill=Y)
+
+# Main Text widget and Scrollbar
+content_text = Text(root, wrap='word')
+content_text.pack(expand='yes', fill='both')
+
+scroll_bar = Scrollbar(content_text)
+content_text.configure(yscrollcommand=scroll_bar.set)
+scroll_bar.config(command=content_text.yview)
+scroll_bar.pack(side='right', fill=Y)
 
 root.mainloop()
