@@ -26,6 +26,60 @@ def select_all(event=None):
     return 'break'
 
 
+def find_text(event=None):
+    search_toplevel = Toplevel(root)
+    search_toplevel.title('Find Text')
+    search_toplevel.transient(root)
+    search_toplevel.resizable(False, False)
+    Label(search_toplevel, text='Find All:',).grid(row=0, column=0, sticky=E)
+    search_entry_widget = Entry(search_toplevel, width=25)
+    search_entry_widget.grid(row=0, column=1, padx=2, pady=2, sticky='we')
+    search_entry_widget.focus_set()
+    ignore_case_value = IntVar()
+    Checkbutton(search_toplevel, text='Ignore Case', variable=ignore_case_value).grid(
+        row=1, column=1, sticky=E, padx=2, pady=2
+    )
+    Button(
+        search_toplevel,
+        text='Find All',
+        underline=0,
+        command=lambda: search_output(
+            search_entry_widget.get(),
+            ignore_case_value.get(),
+            content_text, search_toplevel,
+            search_entry_widget
+        )
+    ).grid(row=0, column=2, sticky='ew', padx=2, pady=2)
+    
+    def close_search_window():
+        content_text.tag_remove('match', '1.0', END)
+        search_toplevel.destroy()
+    search_toplevel.protocol('WM_DELETE_WINDOW', close_search_window)
+    return 'break'
+
+
+def search_output(needle, if_ignore_case, content_text, search_toplevel, search_box):
+    content_text.tag_remove('match', '1.0', END)
+    matches_found = 0
+    if needle:
+        start_pos = '1.0'
+        while True:
+            start_pos = content_text.search(needle, start_pos, nocase=if_ignore_case, stopindex=END)
+            if not start_pos:
+                break
+            end_pos = '{}+{}c'.format(start_pos, len(needle))
+            content_text.tag_add('match', start_pos, end_pos)
+            matches_found += 1
+            start_pos = end_pos
+        content_text.tag_config(
+            'match',
+            foreground='red',
+            background='yellow'
+        )
+    search_box.focus_set()
+    search_toplevel.title('{} matches found'.format(matches_found))
+
+
 root = Tk()
 
 PROGRAM_NAME = "Footprint Editor"
@@ -126,7 +180,7 @@ edit_menu.add_command(
     accelerator='Ctrl+F',
     compound='left',
     underline=0,
-    #command=find
+    command=find_text
 )
 
 edit_menu.add_separator()
@@ -237,6 +291,8 @@ content_text.bind('<Control-y>', redo) # handling Ctrl + smallcase y
 content_text.bind('<Control-Y>', redo) # handling Ctrl + uppercase y
 content_text.bind('<Control-a>', select_all)
 content_text.bind('<Control-A>', select_all)
+content_text.bind('<Control-f>', find_text)
+content_text.bind('<Control-F>', find_text)
 content_text.pack(expand='yes', fill='both')
 
 scroll_bar = Scrollbar(content_text)
