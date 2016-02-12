@@ -1,5 +1,30 @@
 from Tkinter import *
 
+def cut():
+    content_text.event_generate('<<Cut>>')
+
+
+def copy():
+    content_text.event_generate('<<Copy>>')
+
+
+def paste():
+    content_text.event_generate('<<Paste>>')
+
+
+def undo():
+    content_text.event_generate('<<Undo>>')
+
+
+def redo(event=None):
+    content_text.event_generate('<<Redo>>')
+    return 'break'
+
+
+def select_all(event=None):
+    content_text.tag_add('sel', '1.0', 'end')
+    return 'break'
+
 
 root = Tk()
 
@@ -61,14 +86,14 @@ edit_menu.add_command(
     label='Undo',
     accelerator='Ctrl+Z',
     compound='left',
-    #command=undo
+    command=undo
 )
 
 edit_menu.add_command(
     label='Redo',
     accelerator='Ctrl+Y',
     compound='left',
-    #command=redo
+    command=redo
 )
 
 edit_menu.add_separator()
@@ -77,21 +102,21 @@ edit_menu.add_command(
     label='Cut',
     accelerator='Ctrl+X',
     compound='left',
-    #command=cut
+    command=cut
 )
 
 edit_menu.add_command(
     label='Copy',
     accelerator='Ctrl+C',
     compound='left',
-    #command=copy
+    command=copy
 )
 
 edit_menu.add_command(
     label='Paste',
     accelerator='Ctrl+V',
     compound='left',
-    #command=paste
+    command=paste
 )
 
 edit_menu.add_separator()
@@ -111,7 +136,7 @@ edit_menu.add_command(
     accelerator='Ctrl+A',
     compound='left',
     underline=7,
-    #command=select_all
+    command=select_all
 )
 
 view_menu = Menu(menu_bar, tearoff=0)
@@ -207,7 +232,11 @@ line_number_bar = Text(
 line_number_bar.pack(side='left', fill=Y)
 
 # Main Text widget and Scrollbar
-content_text = Text(root, wrap='word')
+content_text = Text(root, wrap='word', undo=True)
+content_text.bind('<Control-y>', redo) # handling Ctrl + smallcase y
+content_text.bind('<Control-Y>', redo) # handling Ctrl + uppercase y
+content_text.bind('<Control-a>', select_all)
+content_text.bind('<Control-A>', select_all)
 content_text.pack(expand='yes', fill='both')
 
 scroll_bar = Scrollbar(content_text)
