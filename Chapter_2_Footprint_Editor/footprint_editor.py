@@ -1,4 +1,23 @@
 from Tkinter import *
+from tkFileDialog import *
+import os
+
+file_name = None
+
+
+def open_file(event=None):
+    input_file_name = askopenfilename(
+        defaultextension='.txt',
+        filetypes=[('All Files', '*.*'), ('Text Documents', '*.txt')]
+    )
+    if input_file_name:
+        global file_name
+        file_name = input_file_name
+        root.title('{} - {}'.format(os.path.basename(file_name), PROGRAM_NAME))
+        content_text.delete(1.0, END)
+        with open(file_name) as _file:
+            content_text.insert(1.0, _file.read())
+
 
 def cut():
     content_text.event_generate('<<Cut>>')
@@ -105,7 +124,7 @@ file_menu.add_command(
     accelerator='Ctrl+O',
     compound='left',
     underline=0,
-    #command=open_file
+    command=open_file
 )
 
 file_menu.add_command(
@@ -293,6 +312,8 @@ content_text.bind('<Control-a>', select_all)
 content_text.bind('<Control-A>', select_all)
 content_text.bind('<Control-f>', find_text)
 content_text.bind('<Control-F>', find_text)
+content_text.bind('<Control-o>', open_file)
+content_text.bind('<Control-O>', open_file)
 content_text.pack(expand='yes', fill='both')
 
 scroll_bar = Scrollbar(content_text)
