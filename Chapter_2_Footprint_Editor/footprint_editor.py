@@ -5,6 +5,13 @@ import os
 file_name = None
 
 
+def new_file(event=None):
+    root.title('Untitled')
+    global file_name
+    file_name = None
+    content_text.delete(1.0, END)
+
+
 def open_file(event=None):
     input_file_name = askopenfilename(
         defaultextension='.txt',
@@ -17,6 +24,37 @@ def open_file(event=None):
         content_text.delete(1.0, END)
         with open(file_name) as _file:
             content_text.insert(1.0, _file.read())
+
+
+def save(event=None):
+    global file_name
+    if not file_name:
+        save_as()
+    else:
+        write_to_file(file_name)
+    return 'break'
+
+
+def save_as(event=None):
+    input_file_name = asksaveasfilename(
+        defaultextension='*.txt',
+        filetypes=[('All Files', '*.*'), ('Text Documents', '*.txt')]
+    )
+    if input_file_name:
+        global file_name
+        file_name = input_file_name
+        write_to_file(file_name)
+        root.title('{} - {}'.format(os.path.basename(file_name), PROGRAM_NAME))
+    return 'break'
+
+
+def write_to_file(file_name):
+    try:
+        content = content_text.get(1.0, END)
+        with open(file_name, 'w') as the_file:
+            the_file.write(content)
+    except IOError:
+        pass # pass for now but we show some warnings - we do this in next iteration
 
 
 def cut():
@@ -116,7 +154,7 @@ file_menu.add_command(
     accelerator='Ctrl+N',
     compound='left',
     underline=0,
-    #command=new_file
+    command=new_file
 )
 
 file_menu.add_command(
@@ -132,14 +170,14 @@ file_menu.add_command(
     accelerator='Ctrl+S',
     compound='left',
     underline=0,
-    #command=save_file
+    command=save
 )
 
 file_menu.add_command(
     label='Save as',
     accelerator='Shift+Ctrl+S',
     compound='left',
-    #command=save_file_as
+    command=save_as
 )
 
 file_menu.add_separator()
@@ -314,6 +352,12 @@ content_text.bind('<Control-f>', find_text)
 content_text.bind('<Control-F>', find_text)
 content_text.bind('<Control-o>', open_file)
 content_text.bind('<Control-O>', open_file)
+content_text.bind('<Control-s>', save)
+content_text.bind('<Control-S>', save)
+content_text.bind('<Shift-Control-s>', save_as)
+content_text.bind('<Shift-Control-S>', save_as)
+content_text.bind('<Control-n>', new_file)
+content_text.bind('<Control-N>', new_file)
 content_text.pack(expand='yes', fill='both')
 
 scroll_bar = Scrollbar(content_text)
