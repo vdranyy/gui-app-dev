@@ -1,5 +1,6 @@
 from Tkinter import *
 from tkFileDialog import *
+from tkMessageBox import *
 import os
 
 file_name = None
@@ -55,6 +56,11 @@ def write_to_file(file_name):
             the_file.write(content)
     except IOError:
         pass # pass for now but we show some warnings - we do this in next iteration
+
+
+def exit_editor(event=None):
+    if askokcancel('Quit?', 'Really quit?'):
+        root.destroy()
 
 
 def cut():
@@ -137,6 +143,14 @@ def search_output(needle, if_ignore_case, content_text, search_toplevel, search_
     search_toplevel.title('{} matches found'.format(matches_found))
 
 
+def display_about_messagebox(event=None):
+    showinfo('About', '{}{}'.format(PROGRAM_NAME, '\nTkinter GUI Application\nDevelopment Blueprints'))
+
+
+def display_help_messagebox(event=None):
+    showinfo('Help', 'Help Book: \nTkinter GUI Application\nDevelopment Blueprints')
+
+
 root = Tk()
 
 PROGRAM_NAME = "Footprint Editor"
@@ -186,7 +200,7 @@ file_menu.add_command(
     label='Exit',
     accelerator='Alt+F4',
     compound='left',
-    #command=exit_file
+    command=exit_editor
 )
 
 edit_menu = Menu(menu_bar, tearoff=0)
@@ -314,13 +328,13 @@ menu_bar.add_cascade(label='About', menu=about_menu)
 about_menu.add_command(
     label='About',
     compound='left',
-    #command=about
+    command=display_about_messagebox
 )
 
 about_menu.add_command(
     label='Help',
     compound='left',
-    #command=help
+    command=display_help_messagebox
 )
 
 root.config(menu=menu_bar)
@@ -358,11 +372,15 @@ content_text.bind('<Shift-Control-s>', save_as)
 content_text.bind('<Shift-Control-S>', save_as)
 content_text.bind('<Control-n>', new_file)
 content_text.bind('<Control-N>', new_file)
+content_text.bind('<Alt-F4>', exit_editor)
+content_text.bind('<KeyPress-F1>', display_help_messagebox)
 content_text.pack(expand='yes', fill='both')
 
 scroll_bar = Scrollbar(content_text)
 content_text.configure(yscrollcommand=scroll_bar.set)
 scroll_bar.config(command=content_text.yview)
 scroll_bar.pack(side='right', fill=Y)
+
+root.protocol('WM_DELETE_WINDOW', exit_editor)
 
 root.mainloop()
