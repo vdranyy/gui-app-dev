@@ -11,6 +11,7 @@ def new_file(event=None):
     global file_name
     file_name = None
     content_text.delete(1.0, END)
+    on_content_changed()
 
 
 def open_file(event=None):
@@ -25,6 +26,7 @@ def open_file(event=None):
         content_text.delete(1.0, END)
         with open(file_name) as _file:
             content_text.insert(1.0, _file.read())
+        on_content_changed()
 
 
 def save(event=None):
@@ -65,6 +67,7 @@ def exit_editor(event=None):
 
 def cut():
     content_text.event_generate('<<Cut>>')
+    on_content_changed()
 
 
 def copy():
@@ -73,14 +76,17 @@ def copy():
 
 def paste():
     content_text.event_generate('<<Paste>>')
+    on_content_changed()
 
 
 def undo():
     content_text.event_generate('<<Undo>>')
+    on_content_changed()
 
 
 def redo(event=None):
     content_text.event_generate('<<Redo>>')
+    on_content_changed()
     return 'break'
 
 
@@ -149,6 +155,67 @@ def display_about_messagebox(event=None):
 
 def display_help_messagebox(event=None):
     showinfo('Help', 'Help Book: \nTkinter GUI Application\nDevelopment Blueprints')
+
+
+def on_content_changed(event=None):
+    update_line_numbers()
+    update_cursor_info_bar()
+
+
+def get_line_numbers():
+    output = ''
+    if show_line_number.get():
+        row, col = content_text.index('end').split('.')
+        for i in range(1, int(row)):
+            output += str(i) + '\n'
+    return output
+
+
+def update_line_numbers(event=None):
+    line_numbers = get_line_numbers()
+    line_number_bar.config(state='normal')
+    line_number_bar.delete(1.0, END)
+    line_number_bar.insert(1.0, line_numbers)
+    line_number_bar.config(state='disabled')
+
+
+def highlight_line(interval=100):
+    content_text.tag_remove('active_line', 1.0, 'end')
+    content_text.tag_add('active_line', 'insert linestart', 'insert lineend+1c')
+    content_text.after(interval, toggle_highlight)
+
+
+def undo_highlight():
+    content_text.tag_remove('active_line', 1.0, 'end')
+
+
+def toggle_highlight(event=None):
+    if to_highlight_line.get():
+        highlight_line()
+    else:
+        undo_highlight()
+
+
+def show_cursor_info_bar():
+    show_cursor_info_checked = show_cursor_info.get()
+    if show_cursor_info_checked:
+        cursor_info_bar.pack(expand='no', fill=None, side='right', anchor='se')
+    else:
+        cursor_info_bar.pack_forget()
+
+
+def update_cursor_info_bar(event=None):
+    row, col = content_text.index(INSERT).split('.')
+    line_num, col_num = str(int(row)), str(int(col)+1)  # col starts at 0
+    infotext = "Line: {0} | Column: {1}".format(line_num, col_num)
+    cursor_info_bar.config(text=infotext)
+
+
+def change_theme(event=None):
+	selected_theme = theme_choice.get()
+	fg_bg_colors = color_schemes.get(selected_theme)
+	foreground_color, background_color = fg_bg_colors.split('.')
+	content_text.config(background=background_color, fg=foreground_color)
 
 
 root = Tk()
@@ -268,57 +335,86 @@ view_menu = Menu(menu_bar, tearoff=0)
 # All view menu goes down here
 menu_bar.add_cascade(label='View', menu=view_menu)
 
+show_line_number = IntVar()
+show_line_number.set(1)
 view_menu.add_checkbutton(
     label='Show Line Number',
-    #variable=show_line_no
+    variable=show_line_number
 )
 
+show_cursor_info = BooleanVar()
+show_cursor_info.set(1)
 view_menu.add_checkbutton(
     label='Show Cursor Location at Bottom',
-    #variable=cursor_bottom
+    variable=show_cursor_info,
+    command=show_cursor_info_bar
 )
 
+to_highlight_line = BooleanVar()
 view_menu.add_checkbutton(
     label='Highlight Current Line',
-    #variable=highlight_line
+    onvalue=1,
+    offvalue=0,
+    variable=to_highlight_line,
+    command=toggle_highlight
 )
 
 themes_menu = Menu(view_menu, tearoff=0)
 view_menu.add_cascade(label='Themes', menu=themes_menu)
 
+color_schemes = {
+	'Default': '#000000.#FFFFFF',
+	'Greygarious':'#83406A.#D1D4D1',
+	'Aquamarine': '#5B8340.#D1E7E0',
+	'Bold Beige': '#4B4620.#FFF0E1',
+	'Cobalt Blue':'#ffffBB.#3333aa',
+	'Olive Green': '#D1E7E0.#5B8340',
+	'Night Mode': '#FFFFFF.#000000',
+}
+
+theme_choice = StringVar()
+theme_choice.set('Default')
+
 themes_menu.add_radiobutton(
     label='Aquamarine',
-    #variable=theme_name
+    variable=theme_choice,
+	command=change_theme
 )
 
 themes_menu.add_radiobutton(
     label='Bold Beige',
-    #variable=theme_name
+    variable=theme_choice,
+	command=change_theme
 )
 
 themes_menu.add_radiobutton(
     label='Cobalt Blue',
-    #variable=theme_name
+    variable=theme_choice,
+	command=change_theme
 )
 
 themes_menu.add_radiobutton(
     label='Default',
-    #variable=theme_name
+    variable=theme_choice,
+	command=change_theme
 )
 
 themes_menu.add_radiobutton(
     label='Greygarious',
-    #variable=theme_name
+    variable=theme_choice,
+	command=change_theme
 )
 
 themes_menu.add_radiobutton(
     label='Night Mode',
-    #variable=theme_name
+    variable=theme_choice,
+	command=change_theme
 )
 
 themes_menu.add_radiobutton(
     label='Olive Green',
-    #variable=theme_name
+    variable=theme_choice,
+	command=change_theme
 )
 
 about_menu = Menu(menu_bar, tearoff=0)
@@ -341,6 +437,15 @@ root.config(menu=menu_bar)
 
 # Frame widget to hold the shortcut icons
 shortcut_bar = Frame(root, height=25, background='light sea green')
+
+icons = ('new_file', 'open_file', 'save', 'cut', 'copy', 'paste', 'undo', 'redo', 'find_text')
+for i, icon in enumerate(icons):
+    tool_bar_icon = PhotoImage(file='icons/{}.png'.format(icon,))
+    cmd = eval(icon)
+    tool_bar = Button(shortcut_bar, image=tool_bar_icon, command=cmd)
+    tool_bar.image = tool_bar_icon
+    tool_bar.pack(side='left')
+
 shortcut_bar.pack(expand='no', fill=X)
 
 # Text widget to hold line numbers
@@ -374,12 +479,19 @@ content_text.bind('<Control-n>', new_file)
 content_text.bind('<Control-N>', new_file)
 content_text.bind('<Alt-F4>', exit_editor)
 content_text.bind('<KeyPress-F1>', display_help_messagebox)
+content_text.bind('<Any-KeyPress>', on_content_changed)
+content_text.tag_configure('active_line', background='ivory2')
+
 content_text.pack(expand='yes', fill='both')
+
 
 scroll_bar = Scrollbar(content_text)
 content_text.configure(yscrollcommand=scroll_bar.set)
 scroll_bar.config(command=content_text.yview)
 scroll_bar.pack(side='right', fill=Y)
+
+cursor_info_bar = Label(content_text, text='Line: 1 | Column: 1')
+cursor_info_bar.pack(expand='no', fill=None, side='right', anchor='se')
 
 root.protocol('WM_DELETE_WINDOW', exit_editor)
 
