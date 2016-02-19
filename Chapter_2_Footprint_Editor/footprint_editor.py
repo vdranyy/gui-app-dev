@@ -218,6 +218,10 @@ def change_theme(event=None):
 	content_text.config(background=background_color, fg=foreground_color)
 
 
+def show_popup_menu(event):
+    popup_menu.tk_popup(event.x_root, event.y_root)
+
+
 root = Tk()
 
 PROGRAM_NAME = "Footprint Editor"
@@ -480,6 +484,7 @@ content_text.bind('<Control-N>', new_file)
 content_text.bind('<Alt-F4>', exit_editor)
 content_text.bind('<KeyPress-F1>', display_help_messagebox)
 content_text.bind('<Any-KeyPress>', on_content_changed)
+content_text.bind('<Button-3>', show_popup_menu)
 content_text.tag_configure('active_line', background='ivory2')
 
 content_text.pack(expand='yes', fill='both')
@@ -492,6 +497,13 @@ scroll_bar.pack(side='right', fill=Y)
 
 cursor_info_bar = Label(content_text, text='Line: 1 | Column: 1')
 cursor_info_bar.pack(expand='no', fill=None, side='right', anchor='se')
+
+popup_menu = Menu(content_text)
+for i in ('cut', 'copy', 'paste', 'undo', 'redo'):
+    cmd = eval(i)
+    popup_menu.add_command(label=i, compound='left', command=cmd)
+popup_menu.add_separator()
+popup_menu.add_command(label='Select All', underline=7, command=select_all)
 
 root.protocol('WM_DELETE_WINDOW', exit_editor)
 
