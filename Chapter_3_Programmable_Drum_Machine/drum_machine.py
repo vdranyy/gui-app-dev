@@ -1,4 +1,6 @@
+import os
 import Tkinter
+import tkFileDialog
 
 PROGRAM_NAME = 'Explosion Drum Machine'
 
@@ -98,7 +100,16 @@ class DrumMachine:
 		self.create_right_button_matrix()
 	
 	def on_open_file_button_clicked(self, drum_index):
-		pass
+		def event_handler():
+			file_path = tkFileDialog.askopenfilename(
+				defaultextension=".wav", 
+				filetypes=[("Wave Files", "*.wav"), ("OGG Files", "*.ogg")])
+			if not file_path:
+				return
+			self.set_drum_file_path(drum_index, file_path)
+			self.display_all_drum_file_names()
+		return event_handler
+	
 	def on_button_clicked(self):
 		pass
 	def on_play_button_clicked(self):
@@ -139,6 +150,17 @@ class DrumMachine:
 		original_color = COLOR_1 if ((col // bpu) % 2) else COLOR_2
 		button_color = BUTTON_CLICKED_COLOR if self.get_button_value(row, col) else original_color
 		self.buttons[row][col].config(background=button_color)
+
+	def display_all_drum_file_names(self):
+		for i, drum_name in enumerate(self.get_list_of_drum_files()):
+			self.display_drum_name(i, drum_name)
+
+	def display_drum_name(self, text_widget_num, file_path):
+		if file_path is None:
+			return
+		drum_name = os.path.basename(file_path)
+		self.drum_load_entry_widget[text_widget_num].delete(0, 'end')
+		self.drum_load_entry_widget[text_widget_num].insert(0, drum_name)
 
 	def create_play_bar(self):
 		playbar_frame = Tkinter.Frame(self.root, height=15)
