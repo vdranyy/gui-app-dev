@@ -29,6 +29,42 @@ class DrumMachine:
 		self.init_all_patterns()
 		self.init_gui()
 
+	def get_current_pattern_dict(self):
+		return self.all_patterns[self.current_pattern.get()]
+
+	def get_bpu(self):
+		return self.get_current_pattern_dict['bpu']
+
+	def set_bpu(self):
+		self.get_current_pattern_dict()['bpu'] = self.bpu.get()
+
+	def get_number_of_units(self):
+		return self.get_current_pattern_dict()['number_of_units']
+
+	def set_number_of_units(self):
+		self.get_current_pattern_dict()['number_of_units'] = self.number_of_units.get()
+
+	def get_list_of_drum_files(self):
+		return self.get_current_pattern_dict()['list_of_drum_files']
+
+	def get_drum_file_path(self, drum_index):
+		return self.get_list_of_drum_files()[drum_index]
+
+	def set_drum_file_path(self, drum_index, file_path):
+		self.get_list_of_drum_files()[drum_index] = file_path
+
+	def get_is_button_clicked_list(self):
+		return self.get_current_pattern_dict()['is_button_clicked_list']
+
+	def set_is_button_clicked_list(self, num_of_rows, num_of_columns):
+		self.get_current_pattern_dict()['is_button_clicked_list'] = [
+		[False] * num_of_columns for i in range(num_of_rows)]
+
+	def get_beats_per_minute(self):
+		return self.get_current_pattern_dict()['beats_per_minute']
+
+	def set_beats_per_minute(self):
+		self.get_current_pattern_dict()['beats_per_minute'] = self.get_beats_per_minute()
 
 	def init_all_patterns(self):
 		self.all_patterns = [
@@ -50,10 +86,17 @@ class DrumMachine:
 
 	def on_pattern_changed(self):
 		pass
+	
 	def on_number_of_units_changed(self):
-		pass
+		self.set_number_of_units()
+		self.set_is_button_clicked_list(MAX_NUMBER_OF_DRUM_SAMPLES, self.find_number_of_columns())
+		self.create_right_button_matrix()
+	
 	def on_bpu_changed(self):
-		pass
+		self.set_bpu()
+		self.set_is_button_clicked_list(MAX_NUMBER_OF_DRUM_SAMPLES, self.find_number_of_columns())
+		self.create_right_button_matrix()
+	
 	def on_open_file_button_clicked(self, drum_index):
 		pass
 	def on_button_clicked(self):
