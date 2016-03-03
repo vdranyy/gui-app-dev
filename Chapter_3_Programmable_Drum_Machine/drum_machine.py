@@ -1,4 +1,6 @@
+import pygame
 import os
+import time
 import Tkinter
 import tkFileDialog
 
@@ -27,6 +29,8 @@ class DrumMachine:
 		self.bpu = Tkinter.IntVar()
 		self.to_loop = Tkinter.BooleanVar()
 		self.beats_per_minute = Tkinter.IntVar()
+		self.loop = True
+		self.keep_playing = False
 		self.drum_load_entry_widget = [None] * MAX_NUMBER_OF_DRUM_SAMPLES
 		self.init_all_patterns()
 		self.init_gui()
@@ -112,14 +116,18 @@ class DrumMachine:
 	
 	def on_button_clicked(self):
 		pass
+	
 	def on_play_button_clicked(self):
-		pass
+		self.start_play()
+	
 	def on_stop_button_clicked(self):
-		pass
+		self.stop_play()
+	
 	def on_loop_button_toggled(self):
 		pass
+	
 	def on_beats_per_minute_changed(self):
-		pass
+		self.set_beats_per_minute()
 
 	def find_number_of_columns(self):
 		return self.number_of_units.get() * self.bpu.get()
@@ -161,6 +169,53 @@ class DrumMachine:
 		drum_name = os.path.basename(file_path)
 		self.drum_load_entry_widget[text_widget_num].delete(0, 'end')
 		self.drum_load_entry_widget[text_widget_num].insert(0, drum_name)
+
+	def start_play(self):
+		self.init_pygame()
+		self.play_pattern()
+
+	def stop_play(self):
+		self.keep_playing = False
+
+	def init_pygame(self):
+		pygame.mixer.pre_init(44100, -16, 1, 512)
+		pygame.init()
+
+	def play_sound(self, sound_filename):
+		if sound_filename is not None:
+			pygame.mixer.Sound(sound_filename).play()
+
+	def get_column_from_matrix(self, matrix, i):
+		return [row[i] for row in matrix]
+
+	def time_to_play_each_column(self):
+		beats_per_minute = self.get_beats_per_minute()
+		beats_per_second = beats_per_minute / 60
+		time_to_play_each_column = 1 / beats_per_second
+		return time_to_play_each_column
+
+	def play_pattern(self):
+		self.keep_playing = True
+		while self.keep_playing:
+			self.now_playing = True
+			play_list = self.get_is_button_clicked_list()
+			num_columns = len(play_list)
+			for column_index in range(num_columns):
+				column_to_play = self.get_column_from_matrix(play_list, column_index)
+				for i, item in enumerate(column_to_play):
+					if item:
+						sound_filename = self.get_drum_file_path(i)
+						self.play_sound(sound_filename)
+				time.sleep(self.time_to_play_each_column())
+				if not self.keep_playing:
+					break
+			if not self.loop:
+				self.keep_playing = self.loop
+		self.now_playing = False
+
+	def on_loop_button_toggled(self):
+		self.loop = self.to_loop.get()
+		self.keep_playing = self.loop
 
 	def create_play_bar(self):
 		playbar_frame = Tkinter.Frame(self.root, height=15)
